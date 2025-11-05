@@ -13,10 +13,19 @@ composer install
 cp .env.example .env
 php artisan key:generate
 
-# 4. Run migrations (database already created)
+# 4. Create MySQL database
+mysql -u root -p -e "CREATE DATABASE drug_finder CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 5. Configure database in .env (update DB_PASSWORD if needed)
+# DB_CONNECTION=mysql
+# DB_DATABASE=drug_finder
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+# 6. Run migrations
 php artisan migrate
 
-# 5. Start server
+# 7. Start server
 php artisan serve
 ```
 
