@@ -116,6 +116,8 @@ drug-finder/
 ├── README.md                          # Complete documentation
 ├── Drug_Finder_API.postman_collection.json  # Postman collection
 ├── app/
+│   ├── Clients/
+│   │   └── RxNormClient.php           # RxNorm HTTP client
 │   ├── Http/Controllers/
 │   │   ├── AuthController.php         # Authentication
 │   │   ├── DrugSearchController.php   # Drug search
@@ -124,7 +126,7 @@ drug-finder/
 │   │   ├── User.php
 │   │   └── UserMedication.php
 │   └── Services/
-│       └── RxNormService.php          # RxNorm API integration
+│       └── RxNormService.php          # Business logic layer
 ├── routes/api.php                     # API routes
 └── tests/                             # 27 passing tests
 ```

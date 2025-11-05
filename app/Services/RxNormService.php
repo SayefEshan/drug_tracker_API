@@ -2,14 +2,20 @@
 
 namespace App\Services;
 
+use App\Clients\RxNormClient;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class RxNormService
 {
-    private const BASE_URL = 'https://rxnav.nlm.nih.gov/REST';
     private const CACHE_TTL = 86400; // 24 hours
+
+    protected RxNormClient $client;
+
+    public function __construct(RxNormClient $client)
+    {
+        $this->client = $client;
+    }
 
     /**
      * Search for drugs by name using getDrugs endpoint
@@ -23,19 +29,11 @@ class RxNormService
         
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($drugName) {
             try {
-                $response = Http::timeout(10)->get(self::BASE_URL . '/drugs.json', [
-                    'name' => $drugName,
-                ]);
+                $data = $this->client->getDrugs($drugName);
 
-                if (!$response->successful()) {
-                    Log::error('RxNorm API getDrugs failed', [
-                        'drug_name' => $drugName,
-                        'status' => $response->status()
-                    ]);
+                if (!$data) {
                     return [];
                 }
-
-                $data = $response->json();
                 $conceptGroup = $data['drugGroup']['conceptGroup'] ?? [];
                 
                 // Find SBD (Semantic Branded Drug) type
@@ -85,20 +83,14 @@ class RxNormService
         
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($rxcui) {
             try {
-                $response = Http::timeout(10)->get(self::BASE_URL . "/rxcui/{$rxcui}/historystatus.json");
+                $data = $this->client->getRxcuiHistoryStatus($rxcui);
 
-                if (!$response->successful()) {
-                    Log::error('RxNorm API getRxcuiHistoryStatus failed', [
-                        'rxcui' => $rxcui,
-                        'status' => $response->status()
-                    ]);
+                if (!$data) {
                     return [
                         'base_names' => [],
                         'dose_form_group_names' => [],
                     ];
                 }
-
-                $data = $response->json();
                 $attributes = $data['rxcuiStatusHistory']['attributes'] ?? null;
 
                 $baseNames = [];
@@ -165,13 +157,11 @@ class RxNormService
         
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($rxcui) {
             try {
-                $response = Http::timeout(10)->get(self::BASE_URL . "/rxcui/{$rxcui}/status.json");
+                $data = $this->client->getRxcuiStatus($rxcui);
 
-                if (!$response->successful()) {
+                if (!$data) {
                     return false;
                 }
-
-                $data = $response->json();
                 $status = $data['rxcuiStatus']['status'] ?? null;
 
                 return $status === 'Active' || $status === 'Remapped';
@@ -196,13 +186,12 @@ class RxNormService
     {
         try {
             // Get basic drug info
-            $response = Http::timeout(10)->get(self::BASE_URL . "/rxcui/{$rxcui}/properties.json");
+            $data = $this->client->getRxcuiProperties($rxcui);
             
-            if (!$response->successful()) {
+            if (!$data) {
                 return null;
             }
 
-            $data = $response->json();
             $properties = $data['properties'] ?? null;
 
             if (!$properties) {

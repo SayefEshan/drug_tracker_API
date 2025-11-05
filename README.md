@@ -389,12 +389,26 @@ php artisan test --coverage
 
 ## Architecture & Features
 
-### Service Layer
+### Layered Architecture
 
-The application uses a service layer pattern with `RxNormService` handling all interactions with the RxNorm API:
-- Drug search with filtering for SBD (Semantic Branded Drug) types
-- RXCUI validation
-- Drug detail retrieval with ingredient and dose form information
+The application follows a clean layered architecture with clear separation of concerns:
+
+**Client Layer (`app/Clients`)**
+- `RxNormClient` - Handles all HTTP requests to RxNorm API
+- Responsible for API communication, error handling, and logging
+- Returns raw API responses or null on failure
+
+**Service Layer (`app/Services`)**
+- `RxNormService` - Business logic for drug operations
+- Uses RxNormClient for API calls
+- Implements caching strategy
+- Transforms API data into application-specific formats
+
+**Controller Layer (`app/Http/Controllers`)**
+- Handles HTTP requests and responses
+- Validates input
+- Delegates business logic to services
+- Returns JSON responses
 
 ### Caching Strategy
 
@@ -441,16 +455,18 @@ The public search endpoint is rate-limited to 60 requests per minute per IP addr
 ```
 drug-finder/
 ├── app/
+│   ├── Clients/                     # HTTP API Clients
+│   │   └── RxNormClient.php        # RxNorm API HTTP client
 │   ├── Http/
-│   │   └── Controllers/
+│   │   └── Controllers/             # HTTP Controllers
 │   │       ├── AuthController.php
 │   │       ├── DrugSearchController.php
 │   │       └── UserMedicationController.php
-│   ├── Models/
+│   ├── Models/                      # Eloquent Models
 │   │   ├── User.php
 │   │   └── UserMedication.php
-│   └── Services/
-│       └── RxNormService.php
+│   └── Services/                    # Business Logic Layer
+│       └── RxNormService.php       # Drug search & validation logic
 ├── database/
 │   ├── factories/
 │   │   └── UserMedicationFactory.php

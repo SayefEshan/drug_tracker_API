@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Clients\RxNormClient;
 use App\Services\RxNormService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -158,7 +159,8 @@ class DrugSearchTest extends TestCase
             ], 200),
         ]);
 
-        $rxNormService = new RxNormService();
+        $rxNormClient = new RxNormClient();
+        $rxNormService = new RxNormService($rxNormClient);
         
         // First call should hit the API
         $result1 = $rxNormService->searchDrugs('aspirin');
