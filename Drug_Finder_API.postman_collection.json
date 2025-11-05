@@ -1,0 +1,587 @@
+{
+	"info": {
+		"_postman_id": "df8a4b5c-1234-4567-89ab-cdef01234567",
+		"name": "Drug Finder API",
+		"description": "Complete API collection for the Drug Finder application - a Laravel-based drug search and medication tracking system.\n\n## Features\n- User authentication (Register, Login, Logout)\n- Public drug search (unauthenticated)\n- Private medication management (authenticated)\n- Rate limiting on public endpoints\n- Comprehensive error handling\n\n## Setup Instructions\n1. Import this collection into Postman\n2. Set up environment variables (see Variables tab)\n3. Register a new user or login\n4. The auth token will be automatically set for subsequent requests\n\n## Base URL\nDefault: `http://localhost:8000/api`\n\n## Authentication\nMost endpoints require Bearer token authentication. The token is automatically captured after login/register.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Automatically save access token to environment",
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"access_token\", jsonData.access_token);",
+									"    pm.environment.set(\"user_id\", jsonData.user.id);",
+									"    console.log(\"Access token saved:\", jsonData.access_token);",
+									"}",
+									"",
+									"// Test assertions",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has access token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('access_token');",
+									"    pm.expect(jsonData).to.have.property('token_type');",
+									"    pm.expect(jsonData.token_type).to.eql('Bearer');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{$randomFullName}}\",\n    \"email\": \"{{$randomEmail}}\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"register"
+							]
+						},
+						"description": "Register a new user account.\n\n**Request Body:**\n- `name` (required): User's full name\n- `email` (required): Valid email address (must be unique)\n- `password` (required): Minimum 8 characters\n\n**Success Response (201):**\n- Returns user details and access token\n- Token is automatically saved to environment variables"
+					},
+					"response": [
+						{
+							"name": "Successful Registration",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"message\": \"User registered successfully\",\n    \"user\": {\n        \"id\": 1,\n        \"name\": \"John Doe\",\n        \"email\": \"john@example.com\"\n    },\n    \"access_token\": \"1|abc123def456...\",\n    \"token_type\": \"Bearer\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Automatically save access token to environment",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"access_token\", jsonData.access_token);",
+									"    pm.environment.set(\"user_id\", jsonData.user.id);",
+									"    console.log(\"Access token saved:\", jsonData.access_token);",
+									"}",
+									"",
+									"// Test assertions",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has access token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('access_token');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Authenticate an existing user.\n\n**Request Body:**\n- `email` (required): User's email address\n- `password` (required): User's password\n\n**Success Response (200):**\n- Returns user details and access token\n- Previous tokens are revoked\n- Token is automatically saved to environment variables"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Clear access token from environment",
+									"if (pm.response.code === 200) {",
+									"    pm.environment.unset(\"access_token\");",
+									"    pm.environment.unset(\"user_id\");",
+									"    console.log(\"Access token cleared\");",
+									"}",
+									"",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"logout"
+							]
+						},
+						"description": "Logout the authenticated user and revoke the current access token.\n\n**Authentication:** Required (Bearer Token)\n\n**Success Response (200):**\n- Token is revoked and removed from environment variables"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user registration, login, and logout.\n\n**Features:**\n- Automatic token management\n- Password validation (min 8 characters)\n- Email uniqueness checking\n- Secure token generation using Laravel Sanctum"
+		},
+		{
+			"name": "Drug Search (Public)",
+			"item": [
+				{
+					"name": "Search Drugs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has data array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"// Save first drug's rxcui for use in other requests",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        pm.environment.set(\"sample_rxcui\", jsonData.data[0].rxcui);",
+									"        console.log(\"Saved sample rxcui:\", jsonData.data[0].rxcui);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/drugs/search?drug_name=aspirin",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"drugs",
+								"search"
+							],
+							"query": [
+								{
+									"key": "drug_name",
+									"value": "aspirin",
+									"description": "Drug name to search (min 2 characters)"
+								}
+							]
+						},
+						"description": "Search for drugs by name from the RxNorm database.\n\n**Authentication:** Not required\n\n**Rate Limit:** 60 requests per minute\n\n**Query Parameters:**\n- `drug_name` (required): Drug name to search (minimum 2 characters)\n\n**Response:**\n- Returns top 5 matching drugs from RxNorm\n- Each drug includes: rxcui, name, base_names (ingredients), dose_form_group_names\n- Results are cached for 24 hours\n\n**Try these search terms:**\n- aspirin\n- ibuprofen\n- acetaminophen\n- lisinopril\n- metformin"
+					},
+					"response": [
+						{
+							"name": "Successful Search",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/drugs/search?drug_name=aspirin",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"drugs",
+										"search"
+									],
+									"query": [
+										{
+											"key": "drug_name",
+											"value": "aspirin"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"message\": \"Drugs retrieved successfully\",\n    \"data\": [\n        {\n            \"rxcui\": \"243670\",\n            \"name\": \"Aspirin 81 MG Oral Tablet\",\n            \"base_names\": [\"Aspirin\"],\n            \"dose_form_group_names\": [\"Oral Tablet\"]\n        },\n        {\n            \"rxcui\": \"198467\",\n            \"name\": \"Aspirin 325 MG Oral Tablet\",\n            \"base_names\": [\"Aspirin\"],\n            \"dose_form_group_names\": [\"Oral Tablet\"]\n        }\n    ]\n}"
+						}
+					]
+				}
+			],
+			"description": "Public drug search endpoint that does not require authentication.\n\n**Rate Limiting:** 60 requests per minute per IP\n\n**Caching:** Results are cached for 24 hours to improve performance"
+		},
+		{
+			"name": "Medications (Private)",
+			"item": [
+				{
+					"name": "Get My Medications",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has data array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"// Save first medication ID for delete test",
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        pm.environment.set(\"medication_id\", jsonData.data[0].id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/medications",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"medications"
+							]
+						},
+						"description": "Retrieve all medications in the authenticated user's list.\n\n**Authentication:** Required (Bearer Token)\n\n**Response:**\n- Returns array of user's medications\n- Each medication includes: id, rxcui, drug_name, base_names, dose_form_group_names, added_at"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Medication",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 or 409\", function () {",
+									"    pm.expect([201, 409]).to.include(pm.response.code);",
+									"});",
+									"",
+									"pm.test(\"Response has data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"});",
+									"",
+									"// Save medication ID",
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"medication_id\", jsonData.data.id);",
+									"    console.log(\"Saved medication_id:\", jsonData.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rxcui\": \"{{sample_rxcui}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/medications",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"medications"
+							]
+						},
+						"description": "Add a drug to the user's medication list.\n\n**Authentication:** Required (Bearer Token)\n\n**Request Body:**\n- `rxcui` (required): Valid RXCUI from RxNorm database\n\n**Validation:**\n- RXCUI must exist and be active in RxNorm\n- User cannot add duplicate medications\n\n**Response Codes:**\n- 201: Medication added successfully\n- 409: Medication already in list\n- 422: Invalid RXCUI\n\n**Note:** Use the \"Search Drugs\" endpoint first to get valid RXCUIs"
+					},
+					"response": [
+						{
+							"name": "Successfully Added",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"rxcui\": \"243670\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/medications",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"medications"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"message\": \"Medication added successfully\",\n    \"data\": {\n        \"id\": 1,\n        \"rxcui\": \"243670\",\n        \"drug_name\": \"Aspirin 81 MG Oral Tablet\",\n        \"base_names\": [\"Aspirin\"],\n        \"dose_form_group_names\": [\"Oral Tablet\"],\n        \"added_at\": \"2025-11-05 12:34:56\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Medication",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Medication deleted\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.include('deleted successfully');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/medications/{{medication_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"medications",
+								"{{medication_id}}"
+							]
+						},
+						"description": "Remove a medication from the user's list.\n\n**Authentication:** Required (Bearer Token)\n\n**URL Parameters:**\n- `id`: Medication ID to delete\n\n**Authorization:**\n- Users can only delete their own medications\n\n**Response Codes:**\n- 200: Medication deleted successfully\n- 404: Medication not found in user's list"
+					},
+					"response": []
+				}
+			],
+			"description": "Private endpoints for managing user medications.\n\n**Authentication:** All endpoints require Bearer token authentication\n\n**Features:**\n- View personal medication list\n- Add medications with RXCUI validation\n- Delete medications\n- Duplicate prevention"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "sample_rxcui",
+			"value": "243670",
+			"type": "string"
+		},
+		{
+			"key": "medication_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
