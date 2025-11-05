@@ -16,7 +16,7 @@ A Laravel-based RESTful API service for searching drug information and tracking 
 
 - PHP 8.2 or higher
 - Composer
-- SQLite (default) or MySQL/PostgreSQL
+- MySQL 8.0 or higher
 - Git
 
 ## Installation
@@ -41,20 +41,30 @@ cp .env.example .env
 php artisan key:generate
 ```
 
-The application uses SQLite by default. If you want to use a different database, update the `.env` file:
+The application uses MySQL. Update the `.env` file with your database credentials:
 
 ```env
-DB_CONNECTION=sqlite
-DB_DATABASE=/absolute/path/to/database/database.sqlite
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=drug_finder
+DB_USERNAME=root
+DB_PASSWORD=your_password
 ```
 
-### 4. Run Migrations
+### 4. Create Database
+
+```bash
+mysql -u root -p -e "CREATE DATABASE drug_finder CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
+
+### 5. Run Migrations
 
 ```bash
 php artisan migrate
 ```
 
-### 5. Start the Development Server
+### 6. Start the Development Server
 
 ```bash
 php artisan serve
@@ -421,7 +431,7 @@ The public search endpoint is rate-limited to 60 requests per minute per IP addr
 
 - **Laravel 12** - PHP Framework
 - **Laravel Sanctum** - API Authentication
-- **SQLite** - Default Database
+- **MySQL 8.0** - Relational Database
 - **RxNorm API** - Drug Information Database
 - **PHPUnit** - Testing Framework
 - **HTTP Client** - Laravel's HTTP facade for API calls
