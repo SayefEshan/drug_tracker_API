@@ -73,36 +73,6 @@ class RxNormClient
     }
 
     /**
-     * Get RxCUI status
-     * 
-     * @param string $rxcui
-     * @return array|null
-     */
-    public function getRxcuiStatus(string $rxcui): ?array
-    {
-        try {
-            $response = Http::timeout(self::TIMEOUT)->get(self::BASE_URL . "/rxcui/{$rxcui}/status.json");
-
-            if (!$response->successful()) {
-                Log::error('RxNorm API getRxcuiStatus failed', [
-                    'rxcui' => $rxcui,
-                    'status' => $response->status()
-                ]);
-                return null;
-            }
-
-            return $response->json();
-
-        } catch (\Exception $e) {
-            Log::error('Exception in RxNormClient::getRxcuiStatus', [
-                'message' => $e->getMessage(),
-                'rxcui' => $rxcui
-            ]);
-            return null;
-        }
-    }
-
-    /**
      * Get RxCUI properties
      * 
      * @param string $rxcui

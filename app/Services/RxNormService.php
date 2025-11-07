@@ -157,14 +157,22 @@ class RxNormService
         
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($rxcui) {
             try {
-                $data = $this->client->getRxcuiStatus($rxcui);
+                $data = $this->client->getRxcuiProperties($rxcui);
 
                 if (!$data) {
                     return false;
                 }
-                $status = $data['rxcuiStatus']['status'] ?? null;
 
-                return $status === 'Active' || $status === 'Remapped';
+                $properties = $data['properties'] ?? null;
+                
+                if (!$properties) {
+                    return false;
+                }
+
+                // Check if the drug is not suppressed (suppress=N means active)
+                $suppress = $properties['suppress'] ?? 'Y';
+                
+                return $suppress === 'N';
 
             } catch (\Exception $e) {
                 Log::error('Exception in validateRxcui', [

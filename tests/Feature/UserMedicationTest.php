@@ -61,11 +61,11 @@ class UserMedicationTest extends TestCase
     public function test_authenticated_user_can_add_medication(): void
     {
         Http::fake([
-            'rxnav.nlm.nih.gov/REST/rxcui/*/status.json' => Http::response([
-                'rxcuiStatus' => ['status' => 'Active'],
-            ], 200),
             'rxnav.nlm.nih.gov/REST/rxcui/*/properties.json' => Http::response([
-                'properties' => ['name' => 'Aspirin 81 MG Oral Tablet'],
+                'properties' => [
+                    'name' => 'Aspirin 81 MG Oral Tablet',
+                    'suppress' => 'N'
+                ],
             ], 200),
             'rxnav.nlm.nih.gov/REST/rxcui/*/historystatus.json' => Http::response([
                 'rxcuiStatusHistory' => [
@@ -115,8 +115,11 @@ class UserMedicationTest extends TestCase
     public function test_adding_medication_fails_with_invalid_rxcui(): void
     {
         Http::fake([
-            'rxnav.nlm.nih.gov/REST/rxcui/*/status.json' => Http::response([
-                'rxcuiStatus' => ['status' => 'Retired'],
+            'rxnav.nlm.nih.gov/REST/rxcui/*/properties.json' => Http::response([
+                'properties' => [
+                    'name' => 'Invalid Drug',
+                    'suppress' => 'Y'  // Suppressed drug
+                ],
             ], 200),
         ]);
 
@@ -141,11 +144,11 @@ class UserMedicationTest extends TestCase
     public function test_adding_duplicate_medication_returns_conflict(): void
     {
         Http::fake([
-            'rxnav.nlm.nih.gov/REST/rxcui/*/status.json' => Http::response([
-                'rxcuiStatus' => ['status' => 'Active'],
-            ], 200),
             'rxnav.nlm.nih.gov/REST/rxcui/*/properties.json' => Http::response([
-                'properties' => ['name' => 'Test Drug'],
+                'properties' => [
+                    'name' => 'Test Drug',
+                    'suppress' => 'N'
+                ],
             ], 200),
             'rxnav.nlm.nih.gov/REST/rxcui/*/historystatus.json' => Http::response([
                 'rxcuiStatusHistory' => ['attributes' => []],
