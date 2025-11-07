@@ -24,8 +24,8 @@ A Laravel-based RESTful API service for searching drug information and tracking 
 ### 1. Clone the Repository
 
 ```bash
-git clone <your-repository-url>
-cd drug-finder
+git clone https://github.com/SayefEshan/drug_tracker_API.git
+cd drug_tracker_API
 ```
 
 ### 2. Install Dependencies

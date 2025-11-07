@@ -3,10 +3,11 @@
 ## 🚀 Setup (5 minutes)
 
 ```bash
-# 1. Navigate to project directory
-cd /Users/sayef/Developer/drug-finder
+# 1. Clone the repository
+git clone https://github.com/SayefEshan/drug_tracker_API.git
+cd drug_tracker_API
 
-# 2. Install dependencies (if not already done)
+# 2. Install dependencies
 composer install
 
 # 3. Set up environment
